@@ -116,9 +116,12 @@ public class ManController : MonoBehaviour
 
             transform.rotation = Quaternion.LookRotation(currentDirection);
 
-            if (direction.magnitude < 0.05f) countPoint++;
+            if (direction.magnitude < 0.05f)
+            {
+                countPoint++;
+            }
 
-            if (countPoint >= wayMovement.Length-1)
+            if (countPoint >= wayMovement.Length - 1)
             {
                 isMove = false;
                 EventManager.OnManEndPointMovement?.Invoke();
@@ -154,8 +157,21 @@ public class ManController : MonoBehaviour
         }
         else if (other.CompareTag(GameConstants.TagCoin))
         {
-            EventManager.OnCoinTake?.Invoke();
-            other.gameObject.SetActive(false);
+            StartCoroutine(StopTakeCoin(other.transform));
         }
+    }
+
+    private IEnumerator StopTakeCoin(Transform coin)
+    {
+        isMove = false;
+        var positionLook = coin.position;
+        positionLook.y = transform.position.y;
+        transform.LookAt(positionLook);
+        animator.SetTrigger("Pickup");
+        yield return new WaitForSeconds(1);
+        coin.gameObject.SetActive(false);
+        EventManager.OnCoinTake?.Invoke();
+        yield return new WaitForSeconds(1);
+        isMove = true;
     }
 }
